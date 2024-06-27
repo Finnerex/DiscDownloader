@@ -236,35 +236,37 @@ public class DownloadCommand extends BaseCommand {
 
     }
 
-    // this it the worst
+    // this is the worst
     private void generateSoundsJson() {
         File[] audios = pluginAudioData.listFiles();
 
         if (audios == null)
             return;
 
-        JsonObject sounds = new JsonObject();
-
+        StringBuilder soundObjects = new StringBuilder();
         for (File audio : audios) {
+            resourceManager.addSpecificFileAtSpecificPlace(audio, resourcePackAudioPath + audio.getName());
 
-            String soundName = audio.getName().split("\\.")[0];
+            String name = audio.getName().split("\\.")[0];
 
-            JsonObject sound = new JsonObject();
-            sound.addProperty("name", "records/" + soundName);
-
-            JsonArray soundsArray = new JsonArray();
-            soundsArray.add(sounds);
-
-            JsonObject disc = new JsonObject();
-            disc.add("sounds", soundsArray);
-
-            sounds.add("music_disc." + soundName, disc);
+            soundObjects.append(
+                    """
+                        
+                        "music_disc.%s": {
+                            "sounds": [ { "name" : "records/%s" } ]
+                        },
+                    """.formatted(name, name)
+            );
         }
+
 
         File soundsJson = new File(pluginAudioData, "sounds.json");
 
-        try (Writer writer2 = new FileWriter(soundsJson)) {
-            gson.toJson(sounds, writer2);
+        try (Writer writer = new FileWriter(soundsJson)) {
+            writer.write("{\n");
+            writer.write(soundObjects.deleteCharAt(soundObjects.length() - 1).toString());
+            writer.write("\n}");
+//            writer.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }

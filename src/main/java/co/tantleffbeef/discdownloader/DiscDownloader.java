@@ -15,7 +15,7 @@ import java.util.jar.JarFile;
 
 public class DiscDownloader extends JavaPlugin {
 
-    private final String DATA_PACK_FOLDER = "/world/datapacks/DiscDownloader_DP/";
+    private final String DATA_PACK_FOLDER = "world/datapacks/DiscDownloader_DP/";
     private final String DP_AUDIO_PATH = "data/disc_downloader/jukebox_song/";
     private final String RESOURCE_PACK_FOLDER = "assets/minecraft/";
     private final String RP_AUDIO_PATH = "sounds/records/";
@@ -67,30 +67,33 @@ public class DiscDownloader extends JavaPlugin {
         if (audios == null)
             return;
 
-        JsonObject sounds = new JsonObject();
-
+        StringBuilder soundObjects = new StringBuilder();
         for (File audio : audios) {
             resourceManager.addSpecificFileAtSpecificPlace(audio, RESOURCE_PACK_FOLDER + RP_AUDIO_PATH + audio.getName());
 
             String name = audio.getName().split("\\.")[0];
 
-            JsonObject sound = new JsonObject();
-            sound.addProperty("name", "records/" + name);
-
-            JsonArray soundsArray = new JsonArray();
-            soundsArray.add(sounds);
-
-            JsonObject disc = new JsonObject();
-            disc.add("sounds", soundsArray);
-
-            sounds.add("music_disc." + name, disc);
+            soundObjects.append(
+                    """
+                        
+                        "music_disc.%s": {
+                            "sounds": [ { "name" : "records/%s" } ]
+                        },
+                    """.formatted(name, name)
+            );
         }
+
 
         File soundsJson = new File(audioFolder, "sounds.json");
 
         try (Writer writer = new FileWriter(soundsJson)) {
-            gson.toJson(sounds, writer);
+            writer.write("{\n");
+            writer.write(soundObjects.deleteCharAt(soundObjects.length() - 1).toString());
+            writer.write("\n}");
+//            writer.flush();
         }
+
+        resourceManager.addSpecificFileAtSpecificPlace(soundsJson, RESOURCE_PACK_FOLDER + "sounds.json");
 
     }
 
