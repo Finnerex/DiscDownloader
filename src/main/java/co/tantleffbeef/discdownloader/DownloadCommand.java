@@ -16,7 +16,6 @@ import com.github.kiulian.downloader.model.videos.VideoInfo;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.stream.JsonReader;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -28,7 +27,6 @@ import ws.schild.jave.encode.EncodingAttributes;
 
 import javax.annotation.Nullable;
 import java.io.*;
-import java.security.MessageDigest;
 import java.util.List;
 
 @CommandAlias("disc")
