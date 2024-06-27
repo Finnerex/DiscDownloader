@@ -104,7 +104,8 @@ public class DiscDownloader extends JavaPlugin {
         try {
 
             File packMcmeta = new File(DATA_PACK_FOLDER + "pack.mcmeta");
-            if (packMcmeta.createNewFile()) {
+            if (!packMcmeta.exists()) {
+                packMcmeta.mkdirs();
                 getLogger().info("creating mcmeta file");
 
                 FileWriter writer = new FileWriter(packMcmeta);
