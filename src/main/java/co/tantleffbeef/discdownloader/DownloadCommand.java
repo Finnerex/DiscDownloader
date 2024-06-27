@@ -185,37 +185,34 @@ public class DownloadCommand extends BaseCommand {
         return convertedAudio;
     }
 
-    public void convertToOgg(File inputFile, File outputFile) {
+    public static void convertToOgg(File inputFile, File outputFile) {
         try {
-            // Get the audio file
-//            AudioFile audioFile = AudioFileIO.read(inputFile);
-//            AudioHeader audioHeader = audioFile.getAudioHeader();
+            // Open input audio file
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(inputFile);
 
-            // Get audio input stream from the input file
-            AudioInputStream inputStream = AudioSystem.getAudioInputStream(inputFile);
+            AudioFormat.Encoding vorbisEncoding = new AudioFormat.Encoding("VORBISENC");
 
-            // Define the audio format for the OGG file
-            AudioFormat baseFormat = inputStream.getFormat();
-            AudioFormat decodedFormat = new AudioFormat(
-                    AudioFormat.Encoding.PCM_SIGNED,
-                    baseFormat.getSampleRate(),
-                    16,
-                    baseFormat.getChannels(),
-                    baseFormat.getChannels() * 2,
-                    baseFormat.getSampleRate(),
-                    false
+            // Set up output format for OGG
+            AudioFormat outputFormat = new AudioFormat(
+                    vorbisEncoding,
+                    audioInputStream.getFormat().getSampleRate(),
+                    16, // sample size in bits
+                    audioInputStream.getFormat().getChannels(),
+                    audioInputStream.getFormat().getChannels() * 2, // frame size
+                    audioInputStream.getFormat().getSampleRate(),
+                    false // big endian
             );
 
-            // Get the decoded audio input stream
-            AudioInputStream decodedStream = AudioSystem.getAudioInputStream(decodedFormat, inputStream);
+            // Get audio input stream converted to output format
+            audioInputStream = AudioSystem.getAudioInputStream(outputFormat, audioInputStream);
 
-            // Write the decoded audio input stream to the output OGG file
-            AudioSystem.write(decodedStream, new AudioFileFormat.Type("OGG", "ogg"), outputFile);
+            // Write to output file
+            AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, outputFile);
 
-            System.out.println("Conversion to OGG completed successfully!");
+            // Clean up
+            audioInputStream.close();
         } catch (Exception e) {
             e.printStackTrace();
-            System.err.println("Error during conversion: " + e.getMessage());
         }
     }
 
@@ -271,7 +268,8 @@ public class DownloadCommand extends BaseCommand {
 
         try (Writer writer = new FileWriter(soundsJson)) {
             writer.write("{\n");
-            writer.write(soundObjects.deleteCharAt(soundObjects.length() - 1).toString());
+            if (soundObjects.length() > 0)
+                writer.write(soundObjects.deleteCharAt(soundObjects.length() - 1).toString());
             writer.write("\n}");
 //            writer.flush();
         } catch (IOException e) {
