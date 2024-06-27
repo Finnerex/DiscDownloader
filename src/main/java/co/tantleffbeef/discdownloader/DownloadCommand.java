@@ -14,15 +14,14 @@ import com.github.kiulian.downloader.model.search.field.SortField;
 import com.github.kiulian.downloader.model.search.field.TypeField;
 import com.github.kiulian.downloader.model.videos.VideoInfo;
 import net.md_5.bungee.api.ChatColor;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import javax.annotation.Nullable;
-import javax.sound.sampled.AudioFileFormat;
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.*;
 import java.io.*;
+import java.nio.file.Files;
 import java.util.List;
 
 @CommandAlias("disc")
@@ -159,6 +158,9 @@ public class DownloadCommand extends BaseCommand {
             throw new RuntimeException("Video submitted with too long length"); // could probably return something but would be difficult
         }
 
+        for (var format : video.audioFormats()){
+            Bukkit.broadcastMessage("format: " + format.type());
+        }
         RequestVideoFileDownload downloadRequest = new RequestVideoFileDownload(video.bestAudioFormat())
                 .saveTo(pluginAudioData)
                 .overwriteIfExists(true);
@@ -185,35 +187,43 @@ public class DownloadCommand extends BaseCommand {
         return convertedAudio;
     }
 
+//    private static final AudioFormat EXAMPLE_FORMAT = new AudioFormat(
+//            16_000,
+//            16,
+//            1,
+//            true,
+//            false
+//    );
+//
+//    private static final AudioFileFormat.Type oggFileFormat = new AudioFileFormat.Type("OGG", "ogg");
+
     public static void convertToOgg(File inputFile, File outputFile) {
-        try {
-            // Open input audio file
-            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(inputFile);
-
-            AudioFormat.Encoding vorbisEncoding = new AudioFormat.Encoding("VORBISENC");
-
-            // Set up output format for OGG
-            AudioFormat outputFormat = new AudioFormat(
-                    vorbisEncoding,
-                    audioInputStream.getFormat().getSampleRate(),
-                    16, // sample size in bits
-                    audioInputStream.getFormat().getChannels(),
-                    audioInputStream.getFormat().getChannels() * 2, // frame size
-                    audioInputStream.getFormat().getSampleRate(),
-                    false // big endian
-            );
-
-            // Get audio input stream converted to output format
-            audioInputStream = AudioSystem.getAudioInputStream(outputFormat, audioInputStream);
-
-            // Write to output file
-            AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, outputFile);
-
-            // Clean up
-            audioInputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try {
+//
+//            byte[] audioFileContent = Files.readAllBytes(inputFile.toPath());
+//
+//            final AudioInputStream originalAudioStream = AudioSystem.getAudioInputStream(new ByteArrayInputStream(audioFileContent));
+//            final AudioInputStream formattedAudioStream = AudioSystem.getAudioInputStream(EXAMPLE_FORMAT, originalAudioStream);
+//            final AudioInputStream lengthAddedAudioStream = new AudioInputStream(formattedAudioStream, EXAMPLE_FORMAT, audioFileContent.length);
+//            final ByteArrayOutputStream convertedOutputStream = new ByteArrayOutputStream();
+//
+//            AudioSystem.write(lengthAddedAudioStream, oggFileFormat, convertedOutputStream);
+//
+//            byte[] outputBytes = convertedOutputStream.toByteArray();
+//
+//            AudioInputStream audioInputStream = new AudioInputStream(
+//                    new java.io.ByteArrayInputStream(outputBytes),
+//                    EXAMPLE_FORMAT,
+//                    outputBytes.length / EXAMPLE_FORMAT.getFrameSize()
+//            );
+//
+//            // Write audio data to file
+//            AudioSystem.write(audioInputStream, oggFileFormat, outputFile);
+//            audioInputStream.close();
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 
     private void createJsonEntry(String name, float lengthSeconds) {
