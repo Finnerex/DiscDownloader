@@ -98,14 +98,15 @@ public class DiscDownloader extends JavaPlugin {
         // make sure the directory exists, create it if it doesn't
         File audioDirectory = new File(DATA_PACK_FOLDER + DP_AUDIO_PATH);
         if (!audioDirectory.exists())
-            audioDirectory.mkdirs();
+            getLogger().info("Was able to create DP Directories: " + audioDirectory.mkdirs());
 
         // add pack mcmeta file if it doesn't exist
         try {
 
             File packMcmeta = new File(DATA_PACK_FOLDER + "pack.mcmeta");
             if (!packMcmeta.exists()) {
-                packMcmeta.mkdirs();
+
+                getLogger().info("Was able to create mcmeta: " + packMcmeta.mkdirs());
                 getLogger().info("creating mcmeta file");
 
                 FileWriter writer = new FileWriter(packMcmeta);
