@@ -1,2 +1,6 @@
 name: DiscDownloader
 version: 0.0.1
+main: co.tantleffbeef.discdownloader.DiscDownloader
+api-version: "1.21"
+
+depend: ["MCPlanes"]
