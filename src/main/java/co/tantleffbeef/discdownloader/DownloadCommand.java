@@ -16,13 +16,12 @@ import com.github.kiulian.downloader.model.videos.VideoInfo;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-import ws.schild.jave.Encoder;
-import ws.schild.jave.EncoderException;
-import ws.schild.jave.MultimediaObject;
-import ws.schild.jave.encode.AudioAttributes;
-import ws.schild.jave.encode.EncodingAttributes;
 
 import javax.annotation.Nullable;
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
 import java.io.*;
 import java.util.List;
 
@@ -30,7 +29,6 @@ import java.util.List;
 public class DownloadCommand extends BaseCommand {
 
     private final YoutubeDownloader downloader;
-    private final Encoder encoder;
     private final Plugin plugin;
     private final String dataPackAudioPath;
     private final ResourceManager resourceManager; // mcp
@@ -43,7 +41,6 @@ public class DownloadCommand extends BaseCommand {
                            String resourcePackAudioPath) {
 
         downloader = new YoutubeDownloader();
-        encoder = new Encoder();
 
         this.plugin = plugin;
         this.resourceManager = resourceManager;
@@ -188,22 +185,37 @@ public class DownloadCommand extends BaseCommand {
         return convertedAudio;
     }
 
-    private void convertToOgg(File input, File output) {
-        AudioAttributes audio = new AudioAttributes();
-        audio.setCodec("libvorbis");
-        audio.setBitRate(128000);
-        audio.setChannels(2);
-        audio.setSamplingRate(44100);
-
-        EncodingAttributes attrs = new EncodingAttributes();
-        attrs.setOutputFormat("ogg");
-        attrs.setAudioAttributes(audio);
-
+    public void convertToOgg(File inputFile, File outputFile) {
         try {
-            MultimediaObject inputMediaObject = new MultimediaObject(input);
-            encoder.encode(inputMediaObject, output, attrs);
-        } catch (EncoderException e) {
+            // Get the audio file
+//            AudioFile audioFile = AudioFileIO.read(inputFile);
+//            AudioHeader audioHeader = audioFile.getAudioHeader();
+
+            // Get audio input stream from the input file
+            AudioInputStream inputStream = AudioSystem.getAudioInputStream(inputFile);
+
+            // Define the audio format for the OGG file
+            AudioFormat baseFormat = inputStream.getFormat();
+            AudioFormat decodedFormat = new AudioFormat(
+                    AudioFormat.Encoding.PCM_SIGNED,
+                    baseFormat.getSampleRate(),
+                    16,
+                    baseFormat.getChannels(),
+                    baseFormat.getChannels() * 2,
+                    baseFormat.getSampleRate(),
+                    false
+            );
+
+            // Get the decoded audio input stream
+            AudioInputStream decodedStream = AudioSystem.getAudioInputStream(decodedFormat, inputStream);
+
+            // Write the decoded audio input stream to the output OGG file
+            AudioSystem.write(decodedStream, new AudioFileFormat.Type("OGG", "ogg"), outputFile);
+
+            System.out.println("Conversion to OGG completed successfully!");
+        } catch (Exception e) {
             e.printStackTrace();
+            System.err.println("Error during conversion: " + e.getMessage());
         }
     }
 
@@ -255,7 +267,7 @@ public class DownloadCommand extends BaseCommand {
         }
 
 
-        File soundsJson = new File(pluginAudioData, "sounds.json");
+        File soundsJson = new File(plugin.getDataFolder(), "sounds.json");
 
         try (Writer writer = new FileWriter(soundsJson)) {
             writer.write("{\n");
@@ -266,7 +278,7 @@ public class DownloadCommand extends BaseCommand {
             e.printStackTrace();
         }
 
-        resourceManager.addSpecificFileAtSpecificPlace(soundsJson, resourcePackFolder);
+        resourceManager.addSpecificFileAtSpecificPlace(soundsJson, resourcePackFolder + "sounds.json");
     }
 
 

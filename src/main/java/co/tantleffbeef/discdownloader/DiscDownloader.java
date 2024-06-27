@@ -3,7 +3,6 @@ package co.tantleffbeef.discdownloader;
 import co.aikar.commands.BukkitCommandManager;
 import co.tantleffbeef.mcplanes.ResourceApi;
 import co.tantleffbeef.mcplanes.ResourceManager;
-import com.google.gson.Gson;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
@@ -15,7 +14,6 @@ public class DiscDownloader extends JavaPlugin {
     private final String RESOURCE_PACK_FOLDER = "assets/minecraft/";
     private final String RP_AUDIO_PATH = "sounds/records/";
     private ResourceManager resourceManager;
-    private Gson gson;
 
 
     @Override
@@ -79,7 +77,7 @@ public class DiscDownloader extends JavaPlugin {
         }
 
 
-        File soundsJson = new File(audioFolder, "sounds.json");
+        File soundsJson = new File(getDataFolder(), "sounds.json");
 
         try (Writer writer = new FileWriter(soundsJson)) {
             writer.write("{\n");
