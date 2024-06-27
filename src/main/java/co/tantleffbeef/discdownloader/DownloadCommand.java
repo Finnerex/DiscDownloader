@@ -13,9 +13,6 @@ import com.github.kiulian.downloader.model.search.SearchResultVideoDetails;
 import com.github.kiulian.downloader.model.search.field.SortField;
 import com.github.kiulian.downloader.model.search.field.TypeField;
 import com.github.kiulian.downloader.model.videos.VideoInfo;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -40,11 +37,10 @@ public class DownloadCommand extends BaseCommand {
     private final String resourcePackFolder;
     private final String resourcePackAudioPath;
     private final File pluginAudioData;
-    private final Gson gson;
     private final int maxSongLengthSeconds;
 
     public DownloadCommand(Plugin plugin, String dataPackAudioFolder, ResourceManager resourceManager, String resourcePackFolder,
-                           String resourcePackAudioPath, Gson gson) {
+                           String resourcePackAudioPath) {
 
         downloader = new YoutubeDownloader();
         encoder = new Encoder();
@@ -54,7 +50,6 @@ public class DownloadCommand extends BaseCommand {
         this.resourcePackFolder = resourcePackFolder;
         this.resourcePackAudioPath = resourcePackAudioPath;
         dataPackAudioPath = dataPackAudioFolder;
-        this.gson = gson;
 
         pluginAudioData = new File(plugin.getDataFolder(), "audio");
 
@@ -163,7 +158,7 @@ public class DownloadCommand extends BaseCommand {
         VideoInfo video = infoResponse.data();
 
         if (video.details().lengthSeconds() > maxSongLengthSeconds) {
-            caller.sendMessage(ChatColor.RED + "This is too long!");
+            caller.sendMessage(ChatColor.RED + "This is longer than the maximum length (" + maxSongLengthSeconds + " seconds)");
             throw new RuntimeException("Video submitted with too long length"); // could probably return something but would be difficult
         }
 

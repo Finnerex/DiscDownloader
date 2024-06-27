@@ -4,14 +4,9 @@ import co.aikar.commands.BukkitCommandManager;
 import co.tantleffbeef.mcplanes.ResourceApi;
 import co.tantleffbeef.mcplanes.ResourceManager;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import org.bukkit.plugin.java.JavaPlugin;
 
-
 import java.io.*;
-import java.util.jar.JarFile;
 
 public class DiscDownloader extends JavaPlugin {
 
@@ -27,7 +22,7 @@ public class DiscDownloader extends JavaPlugin {
     public void onEnable() {
         getLogger().info("Starting Disc Downloader");
 
-        gson = new GsonBuilder().setPrettyPrinting().create();
+        getConfig().addDefault("max-song-length-seconds", 300);
 
         // use MCP Api for the resource pack (meaning this wont work if you dont got McPlanes)
         final var rApiProvider = getServer().getServicesManager().getRegistration(ResourceApi.class);
@@ -50,7 +45,7 @@ public class DiscDownloader extends JavaPlugin {
 
         commandManager.registerCommand(
             new DownloadCommand(this, DATA_PACK_FOLDER + DP_AUDIO_PATH, resourceManager,
-                    RESOURCE_PACK_FOLDER , RESOURCE_PACK_FOLDER + RP_AUDIO_PATH, gson));
+                    RESOURCE_PACK_FOLDER , RESOURCE_PACK_FOLDER + RP_AUDIO_PATH));
 
     }
 
