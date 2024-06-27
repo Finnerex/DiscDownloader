@@ -20,7 +20,6 @@ public class DiscDownloader extends JavaPlugin {
     private final String RESOURCE_PACK_FOLDER = "assets/minecraft/";
     private final String RP_AUDIO_PATH = "sounds/records/";
     private ResourceManager resourceManager;
-
     private Gson gson;
 
 

@@ -43,6 +43,7 @@ public class DownloadCommand extends BaseCommand {
     private final String resourcePackAudioPath;
     private final File pluginAudioData;
     private final Gson gson;
+    private final int maxSongLengthSeconds;
 
     public DownloadCommand(Plugin plugin, String dataPackAudioFolder, ResourceManager resourceManager, String resourcePackFolder,
                            String resourcePackAudioPath, Gson gson) {
@@ -59,19 +60,21 @@ public class DownloadCommand extends BaseCommand {
 
         pluginAudioData = new File(plugin.getDataFolder(), "audio");
 
+        maxSongLengthSeconds = plugin.getConfig().getInt("max-song-length-seconds");
+
     }
 
-    @Default
+    @Default // might not work because resources might have to be reloaded for disc to be given
     public void addAndGiveDisc(Player caller, String videoIdOrURL, @Optional String newName) {
 
-        String name = addDisc(videoIdOrURL, newName);
+        String name = addDisc(caller, videoIdOrURL, newName);
 
         giveDisc(caller, name);
 
     }
 
     @Subcommand("add|a")
-    public String addDisc(String videoIdOrURL, @Optional String newName) {
+    public String addDisc(Player caller, String videoIdOrURL, @Optional String newName) {
         String videoId;
         if (videoIdOrURL.contains("watch?v=")) // maybe better way?
             videoId = videoIdOrURL.substring(videoIdOrURL.indexOf("watch?v=") + 8);
@@ -80,13 +83,11 @@ public class DownloadCommand extends BaseCommand {
             videoId = videoIdOrURL;
 
         /*File audio = */
-        return downloadAudio(videoId, newName).getName().split("\\.")[0];
+        return downloadAudio(caller, videoId, newName).getName().split("\\.")[0];
     }
 
     @Subcommand("give|g")
     public void giveDisc(Player caller, String name) {
-        // maybe search internal list or sounds rp/dp folder for a file name containing given name
-
         // give the disc to the player
          plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(),
                 "give " + caller.getDisplayName() +
@@ -158,10 +159,15 @@ public class DownloadCommand extends BaseCommand {
     }
 
     // TODO: make async?
-    private File downloadAudio(String videoId, @Nullable String newName) {
+    private File downloadAudio(Player caller, String videoId, @Nullable String newName) {
         RequestVideoInfo infoRequest = new RequestVideoInfo(videoId);
         Response<VideoInfo> infoResponse = downloader.getVideoInfo(infoRequest);
         VideoInfo video = infoResponse.data();
+
+        if (video.details().lengthSeconds() > maxSongLengthSeconds) {
+            caller.sendMessage(ChatColor.RED + "This is too long!");
+            throw new RuntimeException("Video submitted with too long length"); // could probably return something but would be difficult
+        }
 
         RequestVideoFileDownload downloadRequest = new RequestVideoFileDownload(video.bestAudioFormat())
                 .saveTo(pluginAudioData)
@@ -183,6 +189,8 @@ public class DownloadCommand extends BaseCommand {
         generateSoundsJson();
 
         resourceManager.addSpecificFileAtSpecificPlace(convertedAudio, resourcePackAudioPath + convertedAudio.getName());
+
+        caller.sendMessage("Download complete!");
 
         return convertedAudio;
     }
@@ -268,7 +276,7 @@ public class DownloadCommand extends BaseCommand {
 
 
     @Subcommand("search|s")
-    public void searchSong(Player caller, boolean downloadTop, String query) {
+    public void searchSong(Player caller, String query, @Optional Boolean downloadTop) {
         RequestSearchResult searchRequest = new RequestSearchResult(query)
                 .type(TypeField.VIDEO)
 //                .forceExactQuery(true)
@@ -279,17 +287,17 @@ public class DownloadCommand extends BaseCommand {
         caller.sendMessage("Finding videos for query: \"" + search.autoCorrectedQuery() + "\"");
         List<SearchResultVideoDetails> searchResults = search.videos();
 
-        if (downloadTop) {
-            var video = searchResults.get(0);
-
-            caller.sendMessage("Downloading: " + video.title() + " - " + video.author());
-            downloadAudio(video.videoId(), null);
-        }
-        else // list search results
+        if (downloadTop == null || !downloadTop) { // list search results
             for (SearchResultVideoDetails result : searchResults) {
                 caller.sendMessage(result.title() + " - " + result.author() +
                         ChatColor.GREEN + ChatColor.ITALIC + " [ID: " + result.videoId() + "]");
             }
+        } else { // download the top video
+            var video = searchResults.get(0);
+
+            caller.sendMessage("Downloading: " + video.title() + " - " + video.author());
+            downloadAudio(caller, video.videoId(), null);
+        }
 
     }
 
