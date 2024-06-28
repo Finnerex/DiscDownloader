@@ -167,21 +167,27 @@ public class DownloadCommand extends BaseCommand {
                 .saveTo(pluginAudioData)
                 .overwriteIfExists(true);
 
-        if (newName != null)
-            downloadRequest.renameTo(newName.replace(' ', '_'));
-        else
-            downloadRequest.renameTo(video.details().title().replace(' ', '_'));
+        String name;
+        String description;
+        if (newName != null) {
+            description = newName;
+            name = newName.replace(' ', '_').toLowerCase();
+        } else {
+            description = video.details().title();
+            name = video.details().title().replace(' ', '_').toLowerCase();
+        }
 
+        downloadRequest.renameTo(name);
 
         Response<File> downloadResponse = downloader.downloadVideoFile(downloadRequest);
         File rawAudio = downloadResponse.data();
-        String name = rawAudio.getName().split("\\.")[0];
+//        String name = rawAudio.getName().split("\\.")[0];
 
         File convertedAudio = new File(rawAudio.getParentFile(), name + ".ogg");
         convertToOgg(rawAudio.getPath(), convertedAudio.getPath());
         rawAudio.delete();
 
-        createJsonEntry(name, video.details().lengthSeconds());
+        createJsonEntry(name, video.details().lengthSeconds(), description);
         generateSoundsJson();
 
         resourceManager.addSpecificFileAtSpecificPlace(convertedAudio, resourcePackAudioPath + convertedAudio.getName());
@@ -231,7 +237,7 @@ public static void convertToOgg(String inputFilePath, String outputFilePath) {
     }
 }
 
-    private void createJsonEntry(String name, float lengthSeconds) {
+    private void createJsonEntry(String name, float lengthSeconds, String description) {
 
         try (Writer writer = new FileWriter(dataPackAudioPath + name + ".json")) {
 
@@ -246,7 +252,7 @@ public static void convertToOgg(String inputFilePath, String outputFilePath) {
                         }
                     }
                     """
-                    .formatted(name, lengthSeconds, name)
+                    .formatted(description, lengthSeconds, name)
             );
 
         } catch (IOException e) {
