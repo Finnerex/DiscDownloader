@@ -63,11 +63,6 @@
     <repositories>
 
         <repository>
-            <id>central</id>
-            <url>https://repo.maven.apache.org/maven2</url>
-        </repository>
-
-        <repository>
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
@@ -111,11 +106,19 @@
             <version>3.2.3</version>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>com.googlecode.soundlibs</groupId>-->
-<!--            <artifactId>tritonus-share</artifactId>-->
-<!--            <version>0.3.7.4</version>-->
-<!--        </dependency>-->
+<!--        <dependency>
+            <groupId>ws.schild</groupId>
+            <artifactId>jave-all-deps</artifactId>
+            <version>3.5.0</version>
+        </dependency>-->
+
+<!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.jcraft/jorbis &ndash;&gt;
+        <dependency>
+            <groupId>org.jcraft</groupId>
+            <artifactId>jorbis</artifactId>
+            <version>0.0.17</version>
+        </dependency> -->
+
 
         <dependency>
             <groupId>co.tantleffbeef</groupId>

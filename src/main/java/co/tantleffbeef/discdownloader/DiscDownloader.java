@@ -82,7 +82,7 @@ public class DiscDownloader extends JavaPlugin {
         try (Writer writer = new FileWriter(soundsJson)) {
             writer.write("{\n");
             if (soundObjects.length() > 0)
-                writer.write(soundObjects.deleteCharAt(soundObjects.length() - 1).toString());
+                writer.write(soundObjects.deleteCharAt(soundObjects.lastIndexOf(",")).toString());
             writer.write("\n}");
 //            writer.flush();
         }

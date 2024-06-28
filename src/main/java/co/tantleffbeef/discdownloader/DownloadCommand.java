@@ -17,6 +17,10 @@ import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+//import ws.schild.jave.Encoder;
+//import ws.schild.jave.MultimediaObject;
+//import ws.schild.jave.encode.AudioAttributes;
+//import ws.schild.jave.encode.EncodingAttributes;
 
 import javax.annotation.Nullable;
 import javax.sound.sampled.*;
@@ -35,6 +39,7 @@ public class DownloadCommand extends BaseCommand {
     private final String resourcePackAudioPath;
     private final File pluginAudioData;
     private final int maxSongLengthSeconds;
+//    Encoder encoder = new Encoder();
 
     public DownloadCommand(Plugin plugin, String dataPackAudioFolder, ResourceManager resourceManager, String resourcePackFolder,
                            String resourcePackAudioPath) {
@@ -158,15 +163,14 @@ public class DownloadCommand extends BaseCommand {
             throw new RuntimeException("Video submitted with too long length"); // could probably return something but would be difficult
         }
 
-        for (var format : video.audioFormats()){
-            Bukkit.broadcastMessage("format: " + format.type());
-        }
         RequestVideoFileDownload downloadRequest = new RequestVideoFileDownload(video.bestAudioFormat())
                 .saveTo(pluginAudioData)
                 .overwriteIfExists(true);
 
         if (newName != null)
             downloadRequest.renameTo(newName);
+        else
+            downloadRequest.renameTo(video.details().title());
 
 
         Response<File> downloadResponse = downloader.downloadVideoFile(downloadRequest);
@@ -174,7 +178,7 @@ public class DownloadCommand extends BaseCommand {
         String name = rawAudio.getName().split("\\.")[0];
 
         File convertedAudio = new File(rawAudio.getParentFile(), name + ".ogg");
-        convertToOgg(rawAudio, convertedAudio);
+        convertToOgg(rawAudio.getPath(), convertedAudio.getPath());
         rawAudio.delete();
 
         createJsonEntry(name, video.details().lengthSeconds());
@@ -187,44 +191,45 @@ public class DownloadCommand extends BaseCommand {
         return convertedAudio;
     }
 
-//    private static final AudioFormat EXAMPLE_FORMAT = new AudioFormat(
-//            16_000,
-//            16,
-//            1,
-//            true,
-//            false
-//    );
-//
-//    private static final AudioFileFormat.Type oggFileFormat = new AudioFileFormat.Type("OGG", "ogg");
 
-    public static void convertToOgg(File inputFile, File outputFile) {
+//    public void convertToOgg(File source, File target) {
+//
+//        AudioAttributes audio = new AudioAttributes();
+//        audio.setCodec("libvorbis");
+//        audio.setBitRate(64000);
+//        audio.setChannels(2);
+//        audio.setSamplingRate(44100);
+//
+//        EncodingAttributes attrs = new EncodingAttributes();
+//        attrs.setOutputFormat("ogg");
+//        attrs.setAudioAttributes(audio);
+//
 //        try {
-//
-//            byte[] audioFileContent = Files.readAllBytes(inputFile.toPath());
-//
-//            final AudioInputStream originalAudioStream = AudioSystem.getAudioInputStream(new ByteArrayInputStream(audioFileContent));
-//            final AudioInputStream formattedAudioStream = AudioSystem.getAudioInputStream(EXAMPLE_FORMAT, originalAudioStream);
-//            final AudioInputStream lengthAddedAudioStream = new AudioInputStream(formattedAudioStream, EXAMPLE_FORMAT, audioFileContent.length);
-//            final ByteArrayOutputStream convertedOutputStream = new ByteArrayOutputStream();
-//
-//            AudioSystem.write(lengthAddedAudioStream, oggFileFormat, convertedOutputStream);
-//
-//            byte[] outputBytes = convertedOutputStream.toByteArray();
-//
-//            AudioInputStream audioInputStream = new AudioInputStream(
-//                    new java.io.ByteArrayInputStream(outputBytes),
-//                    EXAMPLE_FORMAT,
-//                    outputBytes.length / EXAMPLE_FORMAT.getFrameSize()
-//            );
-//
-//            // Write audio data to file
-//            AudioSystem.write(audioInputStream, oggFileFormat, outputFile);
-//            audioInputStream.close();
-//
+//            encoder.encode(new MultimediaObject(source), target, attrs);
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //        }
+//
+//    }
+public static void convertToOgg(String inputFilePath, String outputFilePath) {
+    // Construct the ffmpeg command
+    String[] command = {"ffmpeg", "-i", inputFilePath, "-c:a", "libvorbis", "-q:a", "4", outputFilePath};
+
+    // Execute the command
+    ProcessBuilder processBuilder = new ProcessBuilder(command);
+    Process process;
+    try {
+        process = processBuilder.start();
+        int exitCode = process.waitFor(); // perhaps async that bih
+//        if (exitCode == 0)
+//            System.out.println("Conversion successful.");
+//        else
+//            System.err.println("Error during conversion. Exit code: " + exitCode);
+
+    } catch (IOException | InterruptedException e) {
+        e.printStackTrace();
     }
+}
 
     private void createJsonEntry(String name, float lengthSeconds) {
 
@@ -232,16 +237,16 @@ public class DownloadCommand extends BaseCommand {
 
             writer.write(
                     """
-                            {
-                                "comparator_output" : 1,
-                                "description" : "%s",
-                                "length_in_seconds" : %f,
-                                "sound_event" : {
-                                    "sound_id" : "minecraft:music_disc.%s"
-                                }
-                            }
-                            """
-                            .formatted(name, lengthSeconds, name)
+                    {
+                        "comparator_output" : 1,
+                        "description" : "%s",
+                        "length_in_seconds" : %f,
+                        "sound_event" : {
+                            "sound_id" : "minecraft:music_disc.%s"
+                        }
+                    }
+                    """
+                    .formatted(name, lengthSeconds, name)
             );
 
         } catch (IOException e) {
@@ -279,7 +284,7 @@ public class DownloadCommand extends BaseCommand {
         try (Writer writer = new FileWriter(soundsJson)) {
             writer.write("{\n");
             if (soundObjects.length() > 0)
-                writer.write(soundObjects.deleteCharAt(soundObjects.length() - 1).toString());
+                writer.write(soundObjects.deleteCharAt(soundObjects.lastIndexOf(",")).toString());
             writer.write("\n}");
 //            writer.flush();
         } catch (IOException e) {
@@ -319,6 +324,8 @@ public class DownloadCommand extends BaseCommand {
     @Subcommand("reload|r")
     public void reloadResources(Player caller) {
         // Reload the player's resources with the new pack version
+
+        plugin.getServer().reloadData();
 
         // so probably
         resourceManager.compileResourcesAsync(plugin.getServer().getScheduler());
