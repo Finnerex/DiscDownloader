@@ -136,7 +136,7 @@ public class DownloadCommand extends BaseCommand {
     public void listAudio(Player caller) {
         File[] files = new File(dataPackAudioPath).listFiles();
 
-        if (files == null) {
+        if (files == null || files.length < 1) {
             caller.sendMessage(ChatColor.RED + "No audio found!");
             return;
         }
@@ -168,9 +168,9 @@ public class DownloadCommand extends BaseCommand {
                 .overwriteIfExists(true);
 
         if (newName != null)
-            downloadRequest.renameTo(newName);
+            downloadRequest.renameTo(newName.replace(' ', '_'));
         else
-            downloadRequest.renameTo(video.details().title());
+            downloadRequest.renameTo(video.details().title().replace(' ', '_'));
 
 
         Response<File> downloadResponse = downloader.downloadVideoFile(downloadRequest);
@@ -213,7 +213,7 @@ public class DownloadCommand extends BaseCommand {
 //    }
 public static void convertToOgg(String inputFilePath, String outputFilePath) {
     // Construct the ffmpeg command
-    String[] command = {"ffmpeg", "-i", inputFilePath, "-c:a", "libvorbis", "-q:a", "4", outputFilePath};
+    String[] command = {"ffmpeg", "-i", inputFilePath, "-c:a", "libvorbis", "-ac", "1", "-q:a", "4", outputFilePath};
 
     // Execute the command
     ProcessBuilder processBuilder = new ProcessBuilder(command);
