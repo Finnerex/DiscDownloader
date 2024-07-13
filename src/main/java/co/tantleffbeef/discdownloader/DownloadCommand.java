@@ -14,18 +14,12 @@ import com.github.kiulian.downloader.model.search.field.SortField;
 import com.github.kiulian.downloader.model.search.field.TypeField;
 import com.github.kiulian.downloader.model.videos.VideoInfo;
 import net.md_5.bungee.api.ChatColor;
-import org.bukkit.Bukkit;
+import org.bukkit.JukeboxSong;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-//import ws.schild.jave.Encoder;
-//import ws.schild.jave.MultimediaObject;
-//import ws.schild.jave.encode.AudioAttributes;
-//import ws.schild.jave.encode.EncodingAttributes;
 
 import javax.annotation.Nullable;
-import javax.sound.sampled.*;
 import java.io.*;
-import java.nio.file.Files;
 import java.util.List;
 
 @CommandAlias("disc")
@@ -39,7 +33,6 @@ public class DownloadCommand extends BaseCommand {
     private final String resourcePackAudioPath;
     private final File pluginAudioData;
     private final int maxSongLengthSeconds;
-//    Encoder encoder = new Encoder();
 
     public DownloadCommand(Plugin plugin, String dataPackAudioFolder, ResourceManager resourceManager, String resourcePackFolder,
                            String resourcePackAudioPath) {
@@ -77,11 +70,27 @@ public class DownloadCommand extends BaseCommand {
             videoId = videoIdOrURL;
 
         /*File audio = */
+        caller.sendMessage("Your disc will be available next time the server restarts.");
         return downloadAudio(caller, videoId, newName).getName().split("\\.")[0];
     }
 
     @Subcommand("give|g")
     public void giveDisc(Player caller, String name) {
+        name = name.replace(' ', '_');
+
+//        ItemStack disc = new ItemStack(Material.MUSIC_DISC_13);
+//
+//        ItemMeta meta = disc.getItemMeta();
+//        JukeboxPlayableComponent component = meta.getJukeboxPlayable();
+//        component.setSongKey(new NamespacedKey(plugin, name));
+//
+//        meta.setJukeboxPlayable(component);
+//
+//        disc.setItemMeta(meta);
+//
+//        caller.getInventory().addItem(disc);
+//        caller.updateInventory();
+
         // give the disc to the player
          plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(),
                 "give " + caller.getDisplayName() +
@@ -100,11 +109,9 @@ public class DownloadCommand extends BaseCommand {
             return;
         }
 
-        String fileName = name + ".json";
-
         // me when linear search
         for (File f : jsonFiles) {
-            if (f.getName().equals(fileName)) {
+            if (f.getName().contains(name)) {
                 f.delete();
                 return;
             }
@@ -118,11 +125,9 @@ public class DownloadCommand extends BaseCommand {
             return;
         }
 
-        fileName = name + ".ogg";
-
         // me when linear search
         for (File f : audioFiles) {
-            if (f.getName().equals(fileName)) {
+            if (f.getName().contains(name)) {
                 f.delete();
                 return;
             }
@@ -150,6 +155,8 @@ public class DownloadCommand extends BaseCommand {
         message.delete(message.length() - 2, message.length());
 
         caller.sendMessage(message.toString());
+
+        plugin.getServer().getRegistry(JukeboxSong.class).stream().forEach((song) -> caller.sendMessage(song.getKey().toString()));
     }
 
     // TODO: make async?
@@ -171,10 +178,10 @@ public class DownloadCommand extends BaseCommand {
         String description;
         if (newName != null) {
             description = newName;
-            name = newName.replace(' ', '_').toLowerCase();
+            name = newName.replace(' ', '_').toLowerCase().replace("'", "");
         } else {
             description = video.details().title();
-            name = video.details().title().replace(' ', '_').toLowerCase();
+            name = video.details().title().replace(' ', '_').toLowerCase().replace("'", "");
         }
 
         downloadRequest.renameTo(name);
@@ -198,25 +205,6 @@ public class DownloadCommand extends BaseCommand {
     }
 
 
-//    public void convertToOgg(File source, File target) {
-//
-//        AudioAttributes audio = new AudioAttributes();
-//        audio.setCodec("libvorbis");
-//        audio.setBitRate(64000);
-//        audio.setChannels(2);
-//        audio.setSamplingRate(44100);
-//
-//        EncodingAttributes attrs = new EncodingAttributes();
-//        attrs.setOutputFormat("ogg");
-//        attrs.setAudioAttributes(audio);
-//
-//        try {
-//            encoder.encode(new MultimediaObject(source), target, attrs);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//    }
 public static void convertToOgg(String inputFilePath, String outputFilePath) {
     // Construct the ffmpeg command
     String[] command = {"ffmpeg", "-i", inputFilePath, "-c:a", "libvorbis", "-ac", "1", "-q:a", "4", outputFilePath};
@@ -327,17 +315,17 @@ public static void convertToOgg(String inputFilePath, String outputFilePath) {
 
     }
 
-    @Subcommand("reload|r")
-    public void reloadResources(Player caller) {
-        // Reload the player's resources with the new pack version
-
-        plugin.getServer().reloadData();
-
-        // so probably
-        resourceManager.compileResourcesAsync(plugin.getServer().getScheduler());
-
-        resourceManager.sendResourcesToPlayer(caller);
-    }
+//    @Subcommand("reload|r")
+//    public void reloadResources(Player caller) {
+//        // Reload the player's resources with the new pack version
+//
+//        plugin.getServer().reloadData();
+//
+//        // so probably
+//        resourceManager.compileResourcesAsync(plugin.getServer().getScheduler());
+//
+////        resourceManager.sendResourcesToPlayer(caller);
+//    }
 
     @Subcommand("purgeAll")
     public void purgeAll(Player caller) {
