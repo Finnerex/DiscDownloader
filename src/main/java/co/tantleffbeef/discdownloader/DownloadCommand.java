@@ -315,17 +315,17 @@ public static void convertToOgg(String inputFilePath, String outputFilePath) {
 
     }
 
-//    @Subcommand("reload|r")
-//    public void reloadResources(Player caller) {
-//        // Reload the player's resources with the new pack version
-//
-//        plugin.getServer().reloadData();
-//
-//        // so probably
-//        resourceManager.compileResourcesAsync(plugin.getServer().getScheduler());
-//
-////        resourceManager.sendResourcesToPlayer(caller);
-//    }
+    @Subcommand("reload|r")
+    public void reloadResources(Player caller) {
+        // Reload the player's resources with the new pack version
+
+        plugin.getServer().reloadData();
+
+        // so probably
+        resourceManager.compileResourcesAsync(plugin.getServer().getScheduler());
+
+//        resourceManager.sendResourcesToPlayer(caller);
+    }
 
     @Subcommand("purgeAll")
     public void purgeAll(Player caller) {
