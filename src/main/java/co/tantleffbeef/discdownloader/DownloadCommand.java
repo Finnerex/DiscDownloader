@@ -51,17 +51,17 @@ public class DownloadCommand extends BaseCommand {
 
     }
 
-    @Default // might not work because resources might have to be reloaded for disc to be given
-    public void addAndGiveDisc(Player caller, String videoIdOrURL, @Optional String newName) {
-
-        String name = addDisc(caller, videoIdOrURL, newName);
-
-        giveDisc(caller, name);
-
-    }
+//    @Default // might not work because resources might have to be reloaded for disc to be given
+//    public void addAndGiveDisc(Player caller, String videoIdOrURL, @Optional String newName) {
+//
+//        String name = addDisc(caller, videoIdOrURL, newName);
+//
+//        giveDisc(caller, name);
+//
+//    }
 
     @Subcommand("add|a")
-    public String addDisc(Player caller, String videoIdOrURL, @Optional String newName) {
+    public void addDisc(Player caller, String videoIdOrURL, @Optional String newName) {
         String videoId;
         if (videoIdOrURL.contains("watch?v=")) // maybe better way?
             videoId = videoIdOrURL.substring(videoIdOrURL.indexOf("watch?v=") + 8);
@@ -71,7 +71,7 @@ public class DownloadCommand extends BaseCommand {
 
         /*File audio = */
         caller.sendMessage("Your disc will be available next time the server restarts.");
-        return downloadAudio(caller, videoId, newName).getName().split("\\.")[0];
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> downloadAudio(caller, videoId, newName));
     }
 
     @Subcommand("give|g")
@@ -113,7 +113,7 @@ public class DownloadCommand extends BaseCommand {
         for (File f : jsonFiles) {
             if (f.getName().contains(name)) {
                 f.delete();
-                return;
+                break;
             }
         }
 
@@ -129,7 +129,7 @@ public class DownloadCommand extends BaseCommand {
         for (File f : audioFiles) {
             if (f.getName().contains(name)) {
                 f.delete();
-                return;
+                break;
             }
         }
 
@@ -156,7 +156,7 @@ public class DownloadCommand extends BaseCommand {
 
         caller.sendMessage(message.toString());
 
-        plugin.getServer().getRegistry(JukeboxSong.class).stream().forEach((song) -> caller.sendMessage(song.getKey().toString()));
+//        plugin.getServer().getRegistry(JukeboxSong.class).stream().forEach((song) -> caller.sendMessage(song.getKey().toString()));
     }
 
     // TODO: make async?
@@ -298,7 +298,7 @@ public static void convertToOgg(String inputFilePath, String outputFilePath) {
 
         SearchResult search = downloader.search(searchRequest).data();
 
-        caller.sendMessage("Finding videos for query: \"" + search.autoCorrectedQuery() + "\"");
+        caller.sendMessage("Finding videos for query: \"" + query + "\"");
         List<SearchResultVideoDetails> searchResults = search.videos();
 
         if (downloadTop == null || !downloadTop) { // list search results
@@ -310,7 +310,7 @@ public static void convertToOgg(String inputFilePath, String outputFilePath) {
             var video = searchResults.get(0);
 
             caller.sendMessage("Downloading: " + video.title() + " - " + video.author());
-            downloadAudio(caller, video.videoId(), null);
+            plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> downloadAudio(caller, video.videoId(), null));
         }
 
     }
