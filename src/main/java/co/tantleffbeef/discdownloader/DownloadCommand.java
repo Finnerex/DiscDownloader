@@ -14,13 +14,20 @@ import com.github.kiulian.downloader.model.search.field.SortField;
 import com.github.kiulian.downloader.model.search.field.TypeField;
 import com.github.kiulian.downloader.model.videos.VideoInfo;
 import net.md_5.bungee.api.ChatColor;
-import org.bukkit.JukeboxSong;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.components.JukeboxPlayableComponent;
 import org.bukkit.plugin.Plugin;
 
 import javax.annotation.Nullable;
 import java.io.*;
 import java.util.List;
+import java.util.Set;
 
 @CommandAlias("disc")
 public class DownloadCommand extends BaseCommand {
@@ -76,7 +83,16 @@ public class DownloadCommand extends BaseCommand {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> downloadAudio(caller, videoId, newName));
     }
 
+    // this is most certainly an ass way to do this
+    private final Set<Material> discs = Set.of(Material.MUSIC_DISC_11, Material.MUSIC_DISC_13, Material.MUSIC_DISC_5,
+            Material.MUSIC_DISC_BLOCKS,Material.MUSIC_DISC_CAT, Material.MUSIC_DISC_CHIRP, Material.MUSIC_DISC_CREATOR,
+            Material.MUSIC_DISC_CREATOR_MUSIC_BOX, Material.MUSIC_DISC_FAR, Material.MUSIC_DISC_MALL,
+            Material.MUSIC_DISC_MELLOHI, Material.MUSIC_DISC_OTHERSIDE, Material.MUSIC_DISC_PIGSTEP,
+            Material.MUSIC_DISC_PRECIPICE, Material.MUSIC_DISC_RELIC, Material.MUSIC_DISC_STAL, Material.MUSIC_DISC_STRAD,
+            Material.MUSIC_DISC_WAIT, Material.MUSIC_DISC_WARD);
+
     @Default
+    @Subcommand("give|g")
     public void giveDisc(Player caller, String name) {
         name = name.replace(' ', '_');
 
@@ -85,8 +101,15 @@ public class DownloadCommand extends BaseCommand {
     
             ItemStack disc = inventory.getItemInMainHand();
             ItemMeta meta = disc.getItemMeta();
+
+            if (meta == null || !discs.contains(disc.getType())) // for some reason hasJukeboxPlayable() doesnt really work
+            {
+                caller.sendMessage(ChatColor.RED + "You must be holding a disc!");
+                return;
+            }
             
             JukeboxPlayableComponent component = meta.getJukeboxPlayable();
+
             NamespacedKey songKey = new NamespacedKey("disc_downloader", name);
             component.setSongKey(songKey);
             component.setSong(Registry.JUKEBOX_SONG.get(songKey));
@@ -325,17 +348,17 @@ public static void convertToOgg(String inputFilePath, String outputFilePath) {
 
     }
 
-    @Subcommand("reload|r")
-    public void reloadResources(Player caller) {
+//    @Subcommand("reload|r")
+//    public void reloadResources(Player caller) {
         // Reload the player's resources with the new pack version
 
-        plugin.getServer().reloadData();
+//        plugin.getServer().reloadData();
 
         // so probably
-        resourceManager.compileResourcesAsync(plugin.getServer().getScheduler());
+//        resourceManager.compileResourcesAsync(plugin.getServer().getScheduler());
 
 //        resourceManager.sendResourcesToPlayer(caller);
-    }
+//    }
 
     @Subcommand("purgeAll")
     public void purgeAll(Player caller) {
