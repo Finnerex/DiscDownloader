@@ -20,7 +20,10 @@ public class DiscDownloader extends JavaPlugin {
     public void onEnable() {
         getLogger().info("Starting Disc Downloader");
 
-        getConfig().addDefault("max-song-length-seconds", 300);
+        saveDefaultConfig();
+
+        getConfig().addDefault("max-song-length-seconds", 360);
+        getConfig().addDefault("require-holding-disc", true);
 
         // use MCP Api for the resource pack (meaning this wont work if you dont got McPlanes)
         final var rApiProvider = getServer().getServicesManager().getRegistration(ResourceApi.class);
