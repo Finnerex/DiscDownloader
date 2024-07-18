@@ -36,5 +36,5 @@ Player must be Op.
   
 ## Config Options
   
-`max-song-length-seconds` (int), default value: 300 - The maximum length of audio that can be downloaded.  
+`max-song-length-seconds` (int), default value: 360 - The maximum length of audio that can be downloaded.  
 `require-holding-disc` (bool), default value: true - Whether or not the player has to be holding a disc to put the audio on.  
