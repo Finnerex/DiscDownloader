@@ -33,6 +33,7 @@ public class DownloadCommand extends BaseCommand {
     private final String resourcePackAudioPath;
     private final File pluginAudioData;
     private final int maxSongLengthSeconds;
+    private final boolean requireHoldingDisc;
 
     public DownloadCommand(Plugin plugin, String dataPackAudioFolder, ResourceManager resourceManager, String resourcePackFolder,
                            String resourcePackAudioPath) {
@@ -48,6 +49,7 @@ public class DownloadCommand extends BaseCommand {
         pluginAudioData = new File(plugin.getDataFolder(), "audio");
 
         maxSongLengthSeconds = plugin.getConfig().getInt("max-song-length-seconds");
+        requireHoldingDisc = plugin.getConfig().getBoolean("require-holding-disc");
 
     }
 
@@ -74,28 +76,36 @@ public class DownloadCommand extends BaseCommand {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> downloadAudio(caller, videoId, newName));
     }
 
-    @Subcommand("give|g")
+    @Default
     public void giveDisc(Player caller, String name) {
         name = name.replace(' ', '_');
 
-//        ItemStack disc = new ItemStack(Material.MUSIC_DISC_13);
-//
-//        ItemMeta meta = disc.getItemMeta();
-//        JukeboxPlayableComponent component = meta.getJukeboxPlayable();
-//        component.setSongKey(new NamespacedKey(plugin, name));
-//
-//        meta.setJukeboxPlayable(component);
-//
-//        disc.setItemMeta(meta);
-//
-//        caller.getInventory().addItem(disc);
-//        caller.updateInventory();
+        if (requireHoldingDisc) {
+            PlayerInventory inventory = caller.getInventory();
+    
+            ItemStack disc = inventory.getItemInMainHand();
+            ItemMeta meta = disc.getItemMeta();
+            
+            JukeboxPlayableComponent component = meta.getJukeboxPlayable();
+            NamespacedKey songKey = new NamespacedKey("disc_downloader", name);
+            component.setSongKey(songKey);
+            component.setSong(Registry.JUKEBOX_SONG.get(songKey));
+    
+            meta.setJukeboxPlayable(component);
+    
+            disc.setItemMeta(meta);
+    
+            inventory.setItemInMainHand(disc);
+            caller.updateInventory();
+            
+        } else {
 
-        // give the disc to the player
-         plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(),
-                "give " + caller.getDisplayName() +
-                " minecraft:music_disc_13[jukebox_playable={song:'disc_downloader:" + name + "'}]"
-         );
+            // give the disc to the player
+             plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(),
+                    "give " + caller.getDisplayName() +
+                    " minecraft:music_disc_13[jukebox_playable={song:'disc_downloader:" + name + "'}]"
+             );
+        }
     }
 
     @Subcommand("remove|delete|d")
