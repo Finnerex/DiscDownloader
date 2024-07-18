@@ -9,7 +9,6 @@ Downloads the audio from the given Youtube video to the server.
 Video ID is the string after the "watch?v=" in the link. 
 
 `/disc [Name]`  
-Alias : `/disc g`  
 Gives the disc that has the given name to the player.
 
 `/disc reload`  
