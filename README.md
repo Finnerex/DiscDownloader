@@ -8,17 +8,13 @@ Alias : `/disc a`
 Downloads the audio from the given Youtube video to the server. 
 Video ID is the string after the "watch?v=" in the link. 
 
-`/disc give [Name]`  
+`/disc [Name]`  
 Alias : `/disc g`  
 Gives the disc that has the given name to the player.
-  
-`/disc [Youtube link or video ID] [New name (optional)]`  
-Adds the audio and gives the disc to the player.
 
 `/disc reload`  
 Alias : `/disc r`  
 Reloads the player's resource pack with latest version.  
-**This command must be executed in order for changes (Such as new discs) to take effect!**  
 
 `/disc list`  
 Alias : `/disc l`  
@@ -37,3 +33,8 @@ If it is false or absent, a list of search results will be presented to the play
 `/disc purgeAll`  
 Deletes all disc audio from the server.  
 Player must be Op.  
+  
+## Config Options
+  
+`max-song-length-seconds` (int), default value: 300 - The maximum length of audio that can be downloaded.  
+`require-holding-disc` (bool), default value: true - Whether or not the player has to be holding a disc to put the audio on.  
