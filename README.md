@@ -7,27 +7,28 @@ A spigot plugin for downloading audio from youtube to minecraft discs.
 Alias : `/disc a`  
 Downloads the audio from the given Youtube video to the server. 
 Video ID is the string after the "watch?v=" in the link. 
+Server must be restarted for changes to take effect.  
 
 `/disc [Name]`  
+Alias : `/disc give`, `/disc g` 
 Gives the disc that has the given name to the player.
+If config option `require-holding-disc` is true, the player must be holding a disc for the audio to be added to.  
 
-`/disc reload`  
-Alias : `/disc r`  
-Reloads the player's resource pack with latest version.  
-
-`/disc list`  
+`/disc list [Filter (optional)]`  
 Alias : `/disc l`  
-Lists all of the audio currently downloaded on the server.  
+Lists all of the audio currently downloaded on the server that contain the filter (if given).  
+Click on a song to give it to the player.  
+Click on the trash button to delete the audio.  
 
 `/disc remove [Name]`  
 Alias : `/disc delete`, `/disc d`  
 Removes audio with the given name.  
 
-`/disc search [Query] [Download top (true/false) (optional)]`  
+`/disc search [Query]`  
 Alias : `/disc s`  
 Searches Youtube with the given query.  
-If `Download top` is true, the first result will be added to the server.  
-If it is false or absent, a list of search results will be presented to the player.
+Click on a name to download it.  
+Click on an ID to copy it for use in `/disc add`  
 
 `/disc purgeAll`  
 Deletes all disc audio from the server.  
